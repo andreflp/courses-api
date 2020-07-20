@@ -2,44 +2,92 @@ import { Router } from 'express'
 import { getCustomRepository } from 'typeorm'
 import CoursesRepository from '../repositories/CoursesRepository'
 import CoursesService from '../services/CoursesService'
+import Course from '../database/entity/Course'
 
 const coursesRouter = Router()
 
 coursesRouter.get('/', async (request, response) => {
   const coursesRepository = getCustomRepository(CoursesRepository)
-  const courses = await coursesRepository.find()
+
+  const courses = await coursesRepository.find({
+    order: {
+      title: 'ASC'
+    }
+  })
 
   return response.json(courses)
 })
 
+coursesRouter.get('/:id', async (request, response) => {
+  const { id } = request.params
+  try {
+    const coursesRepository = getCustomRepository(CoursesRepository)
+    const course = await coursesRepository.findOne(id)
+
+    if(!course) {
+      return new Error("Course not found")
+    }
+
+    return response.json(course)
+  } catch (error) {
+    console.log(error)
+    new Error("User error" + error)
+  }
+})
+
+coursesRouter.get('/:id/users', async (request, response) => {
+  const { id } = request.params
+  try {
+    const coursesRepository = getCustomRepository(CoursesRepository)
+    const course = await coursesRepository.find({
+      where: { id }, 
+      relations: ['users']
+    })
+
+    if(!course) {
+      return new Error("Course not found")
+    }
+
+    return response.json(course)
+  } catch (error) {
+    console.log(error)
+    new Error("User error" + error)
+  }
+})
+
+
+
 coursesRouter.post('/', async (request, response) => {
   try {
-    const { title, description, workload, userIds } = request.body
+    const { id, title, description, workload } = request.body
 
     const coursesService = new CoursesService()
 
-    const address = await coursesService.save({
+    const course = await coursesService.save({
+      id,
       title,
       description,
       workload,
-      userIds
+      userIds: []
     })
 
-    return response.json(address)
+    return response.json(course)
 
   } catch (error) {
     return response.status(400).json({ error: error.message })
   }
 })
 
-coursesRouter.put('/:id', async (request, response) => {
+coursesRouter.put('/', async (request, response) => {
   try {
-    const { title, description, workload, userIds } = request.body
-    const { id } = request.params
+    const { id, title, description, workload, userIds } = request.body
+
+    console.log(request.body)
 
     const coursesService = new CoursesService()
 
-    const address = await coursesService.update(id, {
+    const address = await coursesService.update({
+      id,
       title,
       description,
       workload,
@@ -63,6 +111,28 @@ coursesRouter.delete('/:id', async (request, response) => {
 
     return response.json()
 
+  } catch (error) {
+    return response.status(400).json({ error: error.message })
+  }
+})
+
+
+coursesRouter.delete('/:idCourse/:idUser', async (request, response) => {
+  try {
+    const { idCourse, idUser } = request.params
+
+    console.log(request.params)
+
+    const coursesRepository = getCustomRepository(CoursesRepository)
+
+    await coursesRepository.createQueryBuilder()
+      .relation(Course, "users")
+      .of(idCourse)
+      .remove(idUser)
+
+    // await usersRepository.delete(id)
+
+    return response.json()
   } catch (error) {
     return response.status(400).json({ error: error.message })
   }

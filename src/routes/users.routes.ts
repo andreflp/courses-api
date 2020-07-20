@@ -7,10 +7,37 @@ const usersRouter = Router()
 
 usersRouter.get('/', async (request, response) => {
   const usersRepository = getCustomRepository(UsersRepository)
-  const users = await usersRepository.find()
+
+  const users = await usersRepository.find({
+    order: {
+      name: 'ASC'
+    }
+  })
 
   return response.json(users)
 })
+
+
+usersRouter.get('/associate', async (request, response) => {
+  const usersRepository = getCustomRepository(UsersRepository)
+  const { userIds } = request.query
+  let users
+
+  console.log('userIds', userIds)
+ 
+  const query = usersRepository
+    .createQueryBuilder('user')
+    .where(`user.id NOT IN (${userIds})`)
+
+  try {
+    users = await query.getMany()  
+    console.log(users)
+    return response.json(users)
+  } catch (error) {
+    return new Error(`User error ${error}`)
+  }
+})
+
 
 usersRouter.get('/:id', async (request, response) => {
   const { id } = request.params
@@ -24,7 +51,7 @@ usersRouter.get('/:id', async (request, response) => {
 
     return response.json(user)
   } catch (error) {
-    new Error("User error" + error)
+    new Error(`User error ${error}`)
   }
 })
 
@@ -53,10 +80,9 @@ usersRouter.post('/', async (request, response) => {
   }
 })
 
-usersRouter.put('/:id', async (request, response) => {
+usersRouter.put('/', async (request, response) => {
   try {
-    const { name, phone, address, number, zip_code, city, state, country, admission_date } = request.body
-    const { id } = request.params
+    const { id, name, phone, address, number, zip_code, city, state, country, admission_date } = request.body
 
     const usersService = new UsersService()
 
