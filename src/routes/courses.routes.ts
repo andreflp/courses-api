@@ -82,8 +82,6 @@ coursesRouter.put('/', async (request, response) => {
   try {
     const { id, title, description, workload, userIds } = request.body
 
-    console.log(request.body)
-
     const coursesService = new CoursesService()
 
     const address = await coursesService.update({
@@ -121,16 +119,12 @@ coursesRouter.delete('/:idCourse/:idUser', async (request, response) => {
   try {
     const { idCourse, idUser } = request.params
 
-    console.log(request.params)
-
     const coursesRepository = getCustomRepository(CoursesRepository)
 
     await coursesRepository.createQueryBuilder()
       .relation(Course, "users")
       .of(idCourse)
       .remove(idUser)
-
-    // await usersRepository.delete(id)
 
     return response.json()
   } catch (error) {

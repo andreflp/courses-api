@@ -13,19 +13,19 @@ class User {
     @Column()
     phone: string
 
-    @Column()
+    @Column({nullable: true})
     address: string
 
-    @Column()
+    @Column({nullable: true})
     number: string;
 
-    @Column()
+    @Column({nullable: true})
     zip_code: string;
 
-    @Column()
+    @Column({nullable: true})
     city: string;
 
-    @Column()
+    @Column({nullable: true})
     state: string;
 
     @Column({nullable: true})

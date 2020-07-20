@@ -23,7 +23,7 @@ usersRouter.get('/associate', async (request, response) => {
   const { userIds } = request.query
   let users
 
-  console.log('userIds', userIds)
+  if(!userIds) return response.json([])
  
   const query = usersRepository
     .createQueryBuilder('user')
@@ -31,7 +31,6 @@ usersRouter.get('/associate', async (request, response) => {
 
   try {
     users = await query.getMany()  
-    console.log(users)
     return response.json(users)
   } catch (error) {
     return new Error(`User error ${error}`)
