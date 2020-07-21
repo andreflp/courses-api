@@ -23,18 +23,20 @@ usersRouter.get('/associate', async (request, response) => {
   const { userIds } = request.query
   let users
 
-  if(!userIds) return response.json([])
- 
-  const query = usersRepository
+  if(!userIds) {
+    users = await usersRepository.find({
+      order: {
+        name: 'ASC'
+      }
+    })
+  } else {
+    users = await usersRepository
     .createQueryBuilder('user')
-    .where(`user.id NOT IN (${userIds})`)
-
-  try {
-    users = await query.getMany()  
-    return response.json(users)
-  } catch (error) {
-    return new Error(`User error ${error}`)
+    .where(`user.id NOT IN (${userIds})`).getMany()
   }
+ 
+  return response.json(users)
+  
 })
 
 

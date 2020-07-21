@@ -1,8 +1,6 @@
 import CoursesRepository from '../repositories/CoursesRepository'
 import { getCustomRepository } from 'typeorm'
 import Course from '../database/entity/Course'
-import UsersRepository from '../repositories/UsersRepository'
-import User from '../database/entity/User'
 import Pagination from '../models/Pagination'
 
 interface Request {
@@ -10,7 +8,7 @@ interface Request {
   title: string
   description: string
   workload: string
-  userIds: number[]
+  userIds?: number[]
 }
 
 class CoursesService {
@@ -79,6 +77,21 @@ class CoursesService {
     const course = await coursesRepository.findOne(id) 
 
     return course
+  }
+
+  public async updatePartial({ id, title, description, workload } : Request): Promise<Course> {
+    const coursesRepository = getCustomRepository(CoursesRepository)
+  
+    await coursesRepository.save({
+      id,
+      title,
+      description, 
+      workload
+    })
+
+    const response = await coursesRepository.findOne(id) 
+
+    return response
   }
 }
 

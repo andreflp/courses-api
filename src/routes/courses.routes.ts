@@ -10,6 +10,7 @@ coursesRouter.get('/', async (request, response) => {
   const coursesRepository = getCustomRepository(CoursesRepository)
 
   const courses = await coursesRepository.find({
+    relations: ['users'],
     order: {
       title: 'ASC'
     }
@@ -90,6 +91,26 @@ coursesRouter.put('/', async (request, response) => {
       description,
       workload,
       userIds
+    })
+
+    return response.json(address)
+
+  } catch (error) {
+    return response.status(400).json({ error: error.message })
+  }
+})
+
+coursesRouter.patch('/', async (request, response) => {
+  try {
+    const { id, title, description, workload } = request.body
+
+    const coursesService = new CoursesService()
+
+    const address = await coursesService.updatePartial({
+      id,
+      title,
+      description,
+      workload
     })
 
     return response.json(address)
